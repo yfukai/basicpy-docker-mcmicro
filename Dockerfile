@@ -1,7 +1,7 @@
 FROM nvidia/cuda:11.5.2-cudnn8-devel-ubuntu20.04
 
 RUN apt-get update \
-      && apt-get install -y libffi-dev gcc git curl python3-pip\
+      && apt-get install -y libffi-dev gcc git curl python3-pip default-jdk\
       && rm -rf /var/lib/apt/lists/*
 ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:$LD_LIBRARY_PATH
 RUN pip --no-cache-dir install --upgrade pip \

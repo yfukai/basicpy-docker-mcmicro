@@ -2,7 +2,7 @@
 
 This is a simple Docker container wrapping [BaSiCPy](https://github.com/peng-lab/BaSiCPy), intended to be used in [MCMICRO](https://mcmicro.org/).
 
-Please run this container as 
+Please run this container as
 ```bash
 docker run -it --rm -v /path/to/data:/data @@@ python3 /opt/basicpy /data/filename.ome.tiff /data
 ```
