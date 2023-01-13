@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import logging
 
 import click
@@ -10,6 +11,13 @@ from basicpy import BaSiC
 
 logger = logging.Logger("basicpy-docker-mcmicro")
 logger.setLevel(logging.INFO)
+
+def get_main_name(filename):
+    candidate_exts = [".ome.tiff",".ome.tif",".tiff",".tif"]
+    for ext in candidate_exts:
+        if ext in filename:
+            return filename.replace(ext,"")
+    return filename.split(".")[:-1]
 
 @click.command()
 @click.option("--smoothness-flatfield", default=2.5)
@@ -52,12 +60,13 @@ def main(
         flatfields.append(basic.flatfield)
         darkfields.append(basic.darkfield)
     output_folder = Path(output_folder)
-    flatfield_path = output_folder / (input_path + "-ffp.tiff")
-    darkfield_path = output_folder / (input_path + "-dfp.tiff")
+    input_path2 = get_main_name(input_path)
+    flatfield_path = output_folder / (input_path2 + "-ffp.tiff")
+    darkfield_path = output_folder / (input_path2 + "-dfp.tiff")
     flatfields = np.moveaxis(np.array(flatfields),0,-1)
     darkfields = np.moveaxis(np.array(darkfields),0,-1)
-    imsave(flatfield_path, flatfields)
-    imsave(darkfield_path, darkfields)
+    imsave(flatfield_path, flatfields, check_contrast=False)
+    imsave(darkfield_path, darkfields, check_contrast=False)
 
 if __name__ == "__main__":
     main()
