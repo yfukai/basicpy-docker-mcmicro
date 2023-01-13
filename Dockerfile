@@ -10,3 +10,8 @@ RUN pip --no-cache-dir install --upgrade pip \
     && pip --no-cache-dir install "jax[cuda11_cudnn82]==0.3.22" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html \
     && pip --no-cache-dir install basicpy aicsimageio[bfio] bfio[bioformats] scikit-image
 COPY ./main.py /opt/
+RUN mkdir /data
+COPY ./testdata/exemplar-001-cycle-06.ome.tiff /data/
+RUN /opt/main.py --cpu /data/exemplar-001-cycle-06.ome.tiff /data/
+RUN rm -r /data
+ENTRYPOINT ["/opt/main.py"]

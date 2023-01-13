@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 import click
+import jax
 import numpy as np
 from aicsimageio import AICSImage
 from basicpy import BaSiC
@@ -28,13 +29,31 @@ def get_main_name(filename):
 )
 @click.option(
     "--smoothness-darkfield",
-    default=1.0,
+    default=5.0,
     help="Larger value makes the darkfield smoother.",
 )
 @click.option(
     "--sparse-cost-darkfield",
     default=0.01,
     help="Larger value encorages the darkfield sparseness.",
+)
+@click.option(
+    "--max-reweight-iterations",
+    default=20,
+    help="Maximum number of reweighting iterations.",
+)
+@click.option(
+    "--cpu",
+    "device",
+    flag_value="cpu",
+    help="Use CPU.",
+)
+@click.option(
+    "--gpu",
+    "device",
+    flag_value="gpu",
+    default=True,
+    help="Use GPU.",
 )
 @click.option(
     "--ladmap",
@@ -64,15 +83,20 @@ def main(
     smoothness_flatfield,
     smoothness_darkfield,
     sparse_cost_darkfield,
+    max_reweight_iterations,
     fitting_mode,
     darkfield,
     input_path,
     output_folder,
+    device,
 ):
+    if device == "cpu":
+        jax.config.update("jax_platform_name", "cpu")
     basic = BaSiC(
         smoothness_flatfield=smoothness_flatfield,
         smoothness_darkfield=smoothness_darkfield,
         sparse_cost_darkfield=sparse_cost_darkfield,
+        max_reweight_iterations=max_reweight_iterations,
         fitting_mode=fitting_mode,
         get_darkfield=darkfield,
     )
