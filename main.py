@@ -54,13 +54,11 @@ def get_main_name(filename):
     "input_path",
     required=True,
     type=click.Path(dir_okay=False),
-    help="input OME-TIFF path",
 )
 @click.argument(
     "output_folder",
     required=True,
     type=click.Path(file_okay=False),
-    help="output directory",
 )
 def main(
     smoothness_flatfield,
@@ -88,7 +86,7 @@ def main(
         for scene in image.scenes:
             image.set_scene(scene)
             images_data.append(image.get_image_data("MTZYX", C=channel))
-        images_data = np.array(images_data).reshape([-1, *images_data.shape[-2:]])
+        images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
         basic.fit(images_data)
         flatfields.append(basic.flatfield)
         darkfields.append(basic.darkfield)
