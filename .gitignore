@@ -1,2 +1,3 @@
-testdata/exemplar-001-cycle-06-dfp.tiff
-testdata/exemplar-001-cycle-06-ffp.tiff
+testdata/*-dfp.tiff
+testdata/*-ffp.tiff
+.python-version
