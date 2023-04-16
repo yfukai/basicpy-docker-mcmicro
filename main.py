@@ -72,7 +72,7 @@ def get_main_name(filename):
 @click.argument(
     "input_path",
     required=True,
-    type=click.Path(dir_okay=False),
+    type=click.Path(dir_okay=True),
 )
 @click.argument(
     "output_folder",
@@ -100,20 +100,44 @@ def main(
         fitting_mode=fitting_mode,
         get_darkfield=darkfield,
     )
-    logger.info(f"opening images at {input_path}")
-    image = AICSImage(input_path)
 
     flatfields = []
     darkfields = []
-    for channel in range(image.dims.C):
-        images_data = []
-        for scene in image.scenes:
-            image.set_scene(scene)
-            images_data.append(image.get_image_data("MTZYX", C=channel))
-        images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
-        basic.fit(images_data)
-        flatfields.append(basic.flatfield)
-        darkfields.append(basic.darkfield)
+
+    if input_path.is_file():
+        logger.info(f"opening images at {input_path}")
+        image = AICSImage(input_path)
+        for channel in range(image.dims.C):
+            images_data = []
+            for scene in image.scenes:
+                image.set_scene(scene)
+                images_data.append(image.get_image_data("MTZYX", C=channel))
+            images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
+            basic.fit(images_data)
+            flatfields.append(basic.flatfield)
+            darkfields.append(basic.darkfield)
+    else:
+        images_data = None
+        channels = None
+        for image_path in input_path.iterdir():
+            image = AICSImage(image_path)
+            if channels is None:
+                channels = image.channel_names
+                images_data = [[] for _ in len(channels)]
+            else:
+                assert channels == image.channel_names
+        for channel in range(len(channels)):
+            images_data = []
+            for image_path in input_path.iterdir():
+                image = AICSImage(image_path)
+                for scene in image.scenes:
+                    image.set_scene(scene)
+                    images_data.append(image.get_image_data("MTZYX", C=channel))
+            images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
+            basic.fit(images_data)
+            flatfields.append(basic.flatfield)
+            darkfields.append(basic.darkfield)
+    
     output_folder = Path(output_folder)
     input_path2 = get_main_name(input_path)
     flatfield_path = output_folder / (input_path2 + "-ffp.tiff")
