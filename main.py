@@ -1,129 +1,171 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
-import time
-import argparse
-from argparse import ArgumentParser as AP
+
 import click
 import jax
 import numpy as np
 from aicsimageio import AICSImage
 from basicpy import BaSiC
 from skimage.io import imsave
-from os.path import splitext
 
 logger = logging.Logger("basicpy-docker-mcmicro")
 logger.setLevel(logging.INFO)
 
 
-def get_args():
-    # Script description
-    description = """Calculate the flatfield and darkfield of a RAW image using the BaSiC algorithm."""
-
-    # Add parser
-    parser = AP(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    # Sections
-    inputs = parser.add_argument_group(title="Required Input",
-                                       description="Paths to required inputs")
-
-    inputs.add_argument("-i", "--input", dest="input",
-                        action="store", required=True,
-                        help="Path to input file")
-
-    optional = parser.add_argument_group(title="Optional Input for the tool",
-                                         description="Optional arguments for the tool")
-    optional.add_argument("-sf", "--smoothness_flatfield", dest="smoothness_flatfield",
-                          action="store", required=False, type=float, default=2.5,
-                          help="Larger value makes the flatfield smoother.")
-    optional.add_argument("-sd", "--smoothness_darkfield", dest="smoothness_darkfield",
-                          action="store", required=False, type=float, default=5.0,
-                          help="Larger value makes the darkfield smoother.")
-    optional.add_argument("-sc", "--sparse_cost_darkfield", dest="sparse_cost_darkfield",
-                          action="store", required=False, type=float, default=0.01,
-                          help="Larger value encorages the darkfield sparseness.")
-    optional.add_argument("-mi", "--max_reweight_iterations", dest="max_reweight_iterations",
-                          action="store", required=False, type=int, default=20,
-                          help="Maximum number of reweighting iterations.")
-    optional.add_argument("-df", "--darkfield", dest="darkfield",
-                          action="store_true", required=False, default=False,
-                          help="Flag to calculate the darkfield [default=False].")
-    optional.add_argument("-f", "--fitting_mode", dest="fitting_mode", choices=["ladmap", "approximate"],
-                          action="store", required=False, default="ladmap",
-                          help="Fitting mode to use, ladmap or approximate [default = 'ladmap'].")
-    optional.add_argument("-d", "--device", dest="device", choices=["cpu", "gpu"],
-                          action="store", required=False, default="cpu",
-                          help="Device to use, cpu or gpu [default = 'cpu'].")
-
-    output = parser.add_argument_group(title="Output", description="Paths to output file")
-    output.add_argument("-o", "--output_folder", dest="output_folder", action="store", required=True,
-                        help="Path to output folder")
-    output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
-
-    arg = parser.parse_args()
-
-    # Convert input and output to Pathlib
-    arg.input = Path(arg.input)
-    arg.output_folder = Path(arg.output_folder)
-
-    return arg
+def get_main_name(filename):
+    candidate_exts = [".ome.tiff", ".ome.tif", ".tiff", ".tif"]
+    for ext in candidate_exts:
+        if ext in filename:
+            return filename.replace(ext, "")
+    return filename.split(".")[:-1]
 
 
-def main(args):
-    # Unpack arguments
-    input_path = args.input
-
-    # Select device
-    if args.device == "cpu":
+@click.command()
+@click.option(
+    "--smoothness-flatfield",
+    default=2.5,
+    help="Larger value makes the flatfield smoother.",
+)
+@click.option(
+    "--smoothness-darkfield",
+    default=5.0,
+    help="Larger value makes the darkfield smoother.",
+)
+@click.option(
+    "--sparse-cost-darkfield",
+    default=0.01,
+    help="Larger value encorages the darkfield sparseness.",
+)
+@click.option(
+    "--max-reweight-iterations",
+    default=20,
+    help="Maximum number of reweighting iterations.",
+)
+@click.option(
+    "--cpu",
+    "device",
+    flag_value="cpu",
+    help="Use CPU.",
+)
+@click.option(
+    "--gpu",
+    "device",
+    flag_value="gpu",
+    default=True,
+    help="Use GPU.",
+)
+@click.option(
+    "--ladmap",
+    "fitting_mode",
+    flag_value="ladmap",
+    default=True,
+    help="Use the LADMAP algorithm for fitting.",
+)
+@click.option(
+    "--approximate",
+    "fitting_mode",
+    flag_value="approximate",
+    help="Use the approximate algorithm for fitting.",
+)
+@click.option("--darkfield", is_flag=True, default=False, help="Calculate darkfields.")
+@click.option(
+    "--ignore-single-image-error",
+    is_flag=True,
+    default=False,
+    help="Ignore error with the single-sited image.",
+)
+@click.argument(
+    "input_path",
+    required=True,
+    type=click.Path(dir_okay=True),
+)
+@click.argument(
+    "output_folder",
+    required=True,
+    type=click.Path(file_okay=False),
+)
+def main(
+    smoothness_flatfield,
+    smoothness_darkfield,
+    sparse_cost_darkfield,
+    max_reweight_iterations,
+    fitting_mode,
+    darkfield,
+    input_path,
+    output_folder,
+    device,
+    ignore_single_image_error,
+):
+    if device == "cpu":
         jax.config.update("jax_platform_name", "cpu")
-
-    # Run basic
     basic = BaSiC(
-        smoothness_flatfield=args.smoothness_flatfield,
-        smoothness_darkfield=args.smoothness_darkfield,
-        sparse_cost_darkfield=args.sparse_cost_darkfield,
-        max_reweight_iterations=args.max_reweight_iterations,
-        fitting_mode=args.fitting_mode,
-        get_darkfield=args.darkfield,
+        smoothness_flatfield=smoothness_flatfield,
+        smoothness_darkfield=smoothness_darkfield,
+        sparse_cost_darkfield=sparse_cost_darkfield,
+        max_reweight_iterations=max_reweight_iterations,
+        fitting_mode=fitting_mode,
+        get_darkfield=darkfield,
     )
 
-    # Reading images
-    logger.info(f"opening images at {input_path}")
-    image = AICSImage(input_path)
-
-    # Initialize flatflieds and darkfields
     flatfields = []
     darkfields = []
 
-    # Iterate over image channels
-    for channel in range(image.dims.C):
-        images_data = []
+    if input_path.is_file():
+        logger.info(f"opening images at {input_path}")
+        image = AICSImage(input_path)
+        for channel in range(image.dims.C):
+            images_data = []
+            for scene in image.scenes:
+                image.set_scene(scene)
+                images_data.append(image.get_image_data("MTZYX", C=channel))
+            images_data = np.array(images_data).reshape(
+                [-1, *images_data[0].shape[-2:]]
+            )
+            if images_data.shape[0] < 2 and not ignore_single_image_error:
+                raise RuntimeError(
+                    "The image is single sited. Was it saved in the correct way?"
+                )
+            basic.fit(images_data)
+            flatfields.append(basic.flatfield)
+            darkfields.append(basic.darkfield)
+    else:
+        images_data = None
+        channels = None
+        for image_path in input_path.iterdir():
+            image = AICSImage(image_path)
+            if channels is None:
+                channels = image.channel_names
+                images_data = [[] for _ in len(channels)]
+            else:
+                assert channels == image.channel_names
+        for channel in range(len(channels)):
+            images_data = []
+            for image_path in input_path.iterdir():
+                image = AICSImage(image_path)
+                for scene in image.scenes:
+                    image.set_scene(scene)
+                    images_data.append(image.get_image_data("MTZYX", C=channel))
+            images_data = np.array(images_data).reshape(
+                [-1, *images_data[0].shape[-2:]]
+            )
+            if images_data.shape[0] < 2 and not ignore_single_image_error:
+                raise RuntimeError(
+                    "The image is single sited. Was it saved in the correct way?"
+                )
+            basic.fit(images_data)
+            flatfields.append(basic.flatfield)
+            darkfields.append(basic.darkfield)
 
-        # Iterate over image scenes
-        for scene in image.scenes:
-            image.set_scene(scene)
-            images_data.append(image.get_image_data("MTZYX", C=channel))
-        images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
-        basic.fit(images_data)
-        flatfields.append(basic.flatfield)
-        darkfields.append(basic.darkfield)
-
-    # Re-arrange flatfields and darkfields axis
+    output_folder = Path(output_folder)
+    input_path2 = get_main_name(input_path)
+    flatfield_path = output_folder / (input_path2 + "-ffp.tiff")
+    darkfield_path = output_folder / (input_path2 + "-dfp.tiff")
     flatfields = np.moveaxis(np.array(flatfields), 0, -1)
     darkfields = np.moveaxis(np.array(darkfields), 0, -1)
-
-    # Get output file names, splitext gets the file name without the extension
-    flatfield_path = args.output_folder / f"{splitext(input_path)[0]}-ffp.tiff"
-    darkfield_path = args.output_folder / f"{splitext(input_path)[0]}-dfp.tiff"
-
-    # Save flatfields and darkfields
     imsave(flatfield_path, flatfields, check_contrast=False)
     imsave(darkfield_path, darkfields, check_contrast=False)
 
 
 if __name__ == "__main__":
-    # Import arguments
-    args = get_args()
-
-    # Run main and check time
-    main(args)
+    main()
