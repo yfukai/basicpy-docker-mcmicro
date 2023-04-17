@@ -69,7 +69,12 @@ def get_main_name(filename):
     help="Use the approximate algorithm for fitting.",
 )
 @click.option("--darkfield", is_flag=True, default=False, help="Calculate darkfields.")
-@click.option("--ignore-single-image-error", is_flag=True, default=False, help="Ignore error with the single-sited image.")
+@click.option(
+    "--ignore-single-image-error",
+    is_flag=True,
+    default=False,
+    help="Ignore error with the single-sited image.",
+)
 @click.argument(
     "input_path",
     required=True,
@@ -114,9 +119,13 @@ def main(
             for scene in image.scenes:
                 image.set_scene(scene)
                 images_data.append(image.get_image_data("MTZYX", C=channel))
-            images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
+            images_data = np.array(images_data).reshape(
+                [-1, *images_data[0].shape[-2:]]
+            )
             if images_data.shape[0] < 2 and not ignore_single_image_error:
-                raise RuntimeError("The image is single sited. Was it saved in the correct way?")
+                raise RuntimeError(
+                    "The image is single sited. Was it saved in the correct way?"
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
@@ -137,13 +146,17 @@ def main(
                 for scene in image.scenes:
                     image.set_scene(scene)
                     images_data.append(image.get_image_data("MTZYX", C=channel))
-            images_data = np.array(images_data).reshape([-1, *images_data[0].shape[-2:]])
+            images_data = np.array(images_data).reshape(
+                [-1, *images_data[0].shape[-2:]]
+            )
             if images_data.shape[0] < 2 and not ignore_single_image_error:
-                raise RuntimeError("The image is single sited. Was it saved in the correct way?")
+                raise RuntimeError(
+                    "The image is single sited. Was it saved in the correct way?"
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
-    
+
     output_folder = Path(output_folder)
     input_path2 = get_main_name(input_path)
     flatfield_path = output_folder / (input_path2 + "-ffp.tiff")

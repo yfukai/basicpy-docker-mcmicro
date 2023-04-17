@@ -19,7 +19,7 @@ ENV CONDA_DIR=/opt/conda
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# Installing necessary packages 
+# Installing necessary packages
 
 RUN apt-get update \
       && apt-get install -y ca-certificates \
@@ -54,7 +54,7 @@ RUN pip --no-cache-dir install "jax[${JAX_VERSION_EXTRA}]==${JAX_VERSION}" jaxli
     && cd .. \
     && rm -rf jax )
 
-# Installing basicpy and other pip packages 
+# Installing basicpy and other pip packages
 RUN pip --no-cache-dir install basicpy==1.0.1
 
 # Copy script and test run
