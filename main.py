@@ -10,6 +10,7 @@ import numpy as np
 from aicsimageio import AICSImage
 from basicpy import BaSiC
 from skimage.io import imsave
+from os.path import splitext
 
 logger = logging.Logger("basicpy-docker-mcmicro")
 logger.setLevel(logging.INFO)
@@ -44,7 +45,7 @@ def get_args():
     optional.add_argument("-mi", "--max_reweight_iterations", dest="max_reweight_iterations",
                           action="store", required=False, type=int, default=20,
                           help="Maximum number of reweighting iterations.")
-    optional.add_argument("-d", "--darkfield", dest="darkfield",
+    optional.add_argument("-df", "--darkfield", dest="darkfield",
                           action="store_true", required=False, default=False,
                           help="Flag to calculate the darkfield [default=False].")
     optional.add_argument("-f", "--fitting_mode", dest="fitting_mode", choices=["ladmap", "approximate"],
@@ -57,18 +58,15 @@ def get_args():
     output = parser.add_argument_group(title="Output", description="Paths to output file")
     output.add_argument("-o", "--output_folder", dest="output_folder", action="store", required=True,
                         help="Path to output folder")
+    output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
 
     arg = parser.parse_args()
 
-    return arg
+    # Convert input and output to Pathlib
+    arg.input = Path(arg.input)
+    arg.output_folder = Path(arg.output_folder)
 
-# TODO:  this should be simplified to just use Pathlib
-def get_main_name(filename):
-    candidate_exts = [".ome.tiff", ".ome.tif", ".tiff", ".tif"]
-    for ext in candidate_exts:
-        if ext in filename:
-            return filename.replace(ext, "")
-    return filename.split(".")[:-1]
+    return arg
 
 
 def main(args):
@@ -110,14 +108,15 @@ def main(args):
         flatfields.append(basic.flatfield)
         darkfields.append(basic.darkfield)
 
-    # Save flatfields and darkfields
-    # TODO: this should be simplified to just use Pathlib standard functions
-    output_folder = Path(args.output_folder)
-    input_path2 = get_main_name(input_path)
-    flatfield_path = output_folder / (input_path2 + "-ffp.tiff")
-    darkfield_path = output_folder / (input_path2 + "-dfp.tiff")
+    # Re-arrange flatfields and darkfields axis
     flatfields = np.moveaxis(np.array(flatfields), 0, -1)
     darkfields = np.moveaxis(np.array(darkfields), 0, -1)
+
+    # Get output file names, splitext gets the file name without the extension
+    flatfield_path = args.output_folder / f"{splitext(input_path)[0]}-ffp.tiff"
+    darkfield_path = args.output_folder / f"{splitext(input_path)[0]}-dfp.tiff"
+
+    # Save flatfields and darkfields
     imsave(flatfield_path, flatfields, check_contrast=False)
     imsave(darkfield_path, darkfields, check_contrast=False)
 
