@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-import logging
-from pathlib import Path
 import argparse
+import logging
 from argparse import ArgumentParser as AP
+from os.path import splitext
+from pathlib import Path
+
 import jax
 import numpy as np
 from aicsimageio import AICSImage
 from basicpy import BaSiC
 from skimage.io import imsave
-from os.path import splitext
 
 logger = logging.Logger("basicpy-docker-mcmicro")
 logger.setLevel(logging.INFO)
@@ -19,43 +20,118 @@ def get_args():
     description = """Calculate the flatfield and darkfield of a RAW image using the BaSiC algorithm."""
 
     # Add parser
-    parser = AP(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = AP(
+        description=description, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     # Sections
-    inputs = parser.add_argument_group(title="Required Input",
-                                       description="Paths to required inputs")
+    inputs = parser.add_argument_group(
+        title="Required Input", description="Paths to required inputs"
+    )
 
-    inputs.add_argument("-i", "--input", dest="input",
-                        action="store", required=True,
-                        help="Path to input file")
+    inputs.add_argument(
+        "-i",
+        "--input",
+        dest="input",
+        action="store",
+        required=True,
+        help="Path to input file",
+    )
 
-    optional = parser.add_argument_group(title="Optional Input for the tool",
-                                         description="Optional arguments for the tool")
-    optional.add_argument("-sf", "--smoothness_flatfield", dest="smoothness_flatfield",
-                          action="store", required=False, type=float, default=2.5,
-                          help="Larger value makes the flatfield smoother.")
-    optional.add_argument("-sd", "--smoothness_darkfield", dest="smoothness_darkfield",
-                          action="store", required=False, type=float, default=5.0,
-                          help="Larger value makes the darkfield smoother.")
-    optional.add_argument("-sc", "--sparse_cost_darkfield", dest="sparse_cost_darkfield",
-                          action="store", required=False, type=float, default=0.01,
-                          help="Larger value encorages the darkfield sparseness.")
-    optional.add_argument("-mi", "--max_reweight_iterations", dest="max_reweight_iterations",
-                          action="store", required=False, type=int, default=20,
-                          help="Maximum number of reweighting iterations.")
-    optional.add_argument("-df", "--darkfield", dest="darkfield",
-                          action="store_true", required=False, default=False,
-                          help="Flag to calculate the darkfield [default=False].")
-    optional.add_argument("-f", "--fitting_mode", dest="fitting_mode", choices=["ladmap", "approximate"],
-                          action="store", required=False, default="ladmap",
-                          help="Fitting mode to use, ladmap or approximate [default = 'ladmap'].")
-    optional.add_argument("-d", "--device", dest="device", choices=["cpu", "gpu"],
-                          action="store", required=False, default="cpu",
-                          help="Device to use, cpu or gpu [default = 'cpu'].")
+    optional = parser.add_argument_group(
+        title="Optional Input for the tool",
+        description="Optional arguments for the tool",
+    )
+    optional.add_argument(
+        "-sf",
+        "--smoothness_flatfield",
+        dest="smoothness_flatfield",
+        action="store",
+        required=False,
+        type=float,
+        default=2.5,
+        help="Larger value makes the flatfield smoother.",
+    )
+    optional.add_argument(
+        "-sd",
+        "--smoothness_darkfield",
+        dest="smoothness_darkfield",
+        action="store",
+        required=False,
+        type=float,
+        default=5.0,
+        help="Larger value makes the darkfield smoother.",
+    )
+    optional.add_argument(
+        "-sc",
+        "--sparse_cost_darkfield",
+        dest="sparse_cost_darkfield",
+        action="store",
+        required=False,
+        type=float,
+        default=0.01,
+        help="Larger value encorages the darkfield sparseness.",
+    )
+    optional.add_argument(
+        "-mi",
+        "--max_reweight_iterations",
+        dest="max_reweight_iterations",
+        action="store",
+        required=False,
+        type=int,
+        default=20,
+        help="Maximum number of reweighting iterations.",
+    )
+    optional.add_argument(
+        "-df",
+        "--darkfield",
+        dest="darkfield",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Flag to calculate the darkfield [default=False].",
+    )
+    optional.add_argument(
+        "-ie",
+        "--ignore_single_image_error",
+        dest="ignore_single_image_error",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Ignore error for single-sited image [default=False].",
+    )
+    optional.add_argument(
+        "-f",
+        "--fitting_mode",
+        dest="fitting_mode",
+        choices=["ladmap", "approximate"],
+        action="store",
+        required=False,
+        default="ladmap",
+        help="Fitting mode to use, ladmap or approximate [default = 'ladmap'].",
+    )
+    optional.add_argument(
+        "-d",
+        "--device",
+        dest="device",
+        choices=["cpu", "gpu"],
+        action="store",
+        required=False,
+        default="cpu",
+        help="Device to use, cpu or gpu [default = 'cpu'].",
+    )
 
-    output = parser.add_argument_group(title="Output", description="Paths to output file")
-    output.add_argument("-o", "--output_folder", dest="output_folder", action="store", required=True,
-                        help="Path to output folder")
+    output = parser.add_argument_group(
+        title="Output", description="Paths to output file"
+    )
+    output.add_argument(
+        "-o",
+        "--output_folder",
+        dest="output_folder",
+        action="store",
+        required=True,
+        help="Path to output folder",
+    )
     output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
 
     arg = parser.parse_args()
@@ -86,7 +162,7 @@ def main(args):
     flatfields = []
     darkfields = []
 
-    # Chekc if input is a folder or a file
+    # Check if input is a folder or a file
     if args.input.is_file():
         logger.info(f"opening images at {args.input}")
         image = AICSImage(args.input)
@@ -98,7 +174,7 @@ def main(args):
             images_data = np.array(images_data).reshape(
                 [-1, *images_data[0].shape[-2:]]
             )
-            if images_data.shape[0] < 2 and not ignore_single_image_error:
+            if images_data.shape[0] < 2 and not args.ignore_single_image_error:
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
@@ -111,7 +187,7 @@ def main(args):
         images_data = None
         channels = None
         for image_path in args.input.iterdir():
-            print(image_path)
+            logger.info(f"opening images at {image_path}")
             image = AICSImage(image_path)
             if channels is None:
                 channels = image.channel_names
@@ -128,7 +204,7 @@ def main(args):
             images_data = np.array(images_data).reshape(
                 [-1, *images_data[0].shape[-2:]]
             )
-            if images_data.shape[0] < 2 and not ignore_single_image_error:
+            if images_data.shape[0] < 2 and not args.ignore_single_image_error:
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
