@@ -14,8 +14,8 @@ docker buildx build \
     --build-arg BASE_IMAGE="nvidia/cuda:11.5.2-cudnn8-devel-ubuntu20.04" \
     --build-arg JAX_VERSION="$JAX_VERSION" \
     --build-arg JAX_VERSION_EXTRA="cuda11_cudnn82" \
-    -t yfukai/conda-jax-cuda:$JAX_VERSION \
-    -t yfukai/conda-jax-cuda:latest \
+    -t yfukai/conda-jax:$JAX_VERSION-cuda \
+    -t yfukai/conda-jax:latest-cuda \
     "."
 
 docker push yfukai/conda-jax --all-tags
