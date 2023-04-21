@@ -17,6 +17,3 @@ docker buildx build \
     -t yfukai/conda-jax:$JAX_VERSION-cuda \
     -t yfukai/conda-jax:latest-cuda \
     "."
-
-docker push yfukai/conda-jax --all-tags
-docker push yfukai/conda-jax-cuda --all-tags

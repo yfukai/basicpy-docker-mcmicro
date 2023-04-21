@@ -39,9 +39,10 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc # buildkit
 
 # Installing or building Jax
-RUN pip --no-cache-dir install --upgrade pip \
-    && conda install -c conda-forge aicsimageio \
-    && pip --no-cache-dir install numpy wheel bfio[bioformats] scikit-image
+RUN conda install -c conda-forge mamba \
+    && mamba install -c conda-forge aicsimageio pip numpy wheel scikit-image \
+    && pip --no-cache-dir install bfio[bioformats]
+
 RUN pip --no-cache-dir install "jax[${JAX_VERSION_EXTRA}]==${JAX_VERSION}" jaxlib || \
     pip --no-cache-dir install "jax[${JAX_VERSION_EXTRA}]==${JAX_VERSION}" jaxlib -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html || \
     ( git clone https://github.com/google/jax \
