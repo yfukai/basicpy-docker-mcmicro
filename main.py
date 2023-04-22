@@ -30,9 +30,24 @@ def get_args():
     )
 
     inputs.add_argument(
-        "input",
+        "-i",
+        "--input",
+        dest="input",
         action="store",
+        required=True,
         help="Path to input file",
+    )
+
+    output = parser.add_argument_group(
+        title="Output", description="Paths to output file"
+    )
+    output.add_argument(
+        "-o",
+        "--output_folder",
+        dest="output_folder",
+        action="store",
+        required=True,
+        help="Path to output folder",
     )
 
     optional = parser.add_argument_group(
@@ -117,16 +132,6 @@ def get_args():
         default="cpu",
         help="Device to use, cpu or gpu [default = 'cpu'].",
     )
-
-    output = parser.add_argument_group(
-        title="Output", description="Paths to output file"
-    )
-    output.add_argument(
-        "output_folder",
-        action="store",
-        help="Path to output folder",
-    )
-    output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
 
     arg = parser.parse_args()
 

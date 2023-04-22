@@ -14,5 +14,3 @@ docker buildx build \
     -t yfukai/basicpy-docker-mcmicro:$VERSION-cuda \
     -t yfukai/basicpy-docker-mcmicro:latest-cuda \
     "."
-
-docker push yfukai/basicpy-docker-mcmicro --all-tags
