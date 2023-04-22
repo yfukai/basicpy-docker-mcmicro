@@ -30,11 +30,8 @@ def get_args():
     )
 
     inputs.add_argument(
-        "-i",
-        "--input",
-        dest="input",
+        "input",
         action="store",
-        required=True,
         help="Path to input file",
     )
 
@@ -125,11 +122,8 @@ def get_args():
         title="Output", description="Paths to output file"
     )
     output.add_argument(
-        "-o",
-        "--output_folder",
-        dest="output_folder",
+        "output_folder",
         action="store",
-        required=True,
         help="Path to output folder",
     )
     output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
