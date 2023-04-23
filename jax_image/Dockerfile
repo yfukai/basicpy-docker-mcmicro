@@ -52,10 +52,3 @@ RUN pip --no-cache-dir install "jax[${JAX_VERSION_EXTRA}]==${JAX_VERSION}" jaxli
     && pip install dist/*.whl \
     && cd .. \
     && rm -rf jax )
-
-# Installing basicpy and other pip packages
-# RUN mkdir /data
-# COPY ./testdata/exemplar-001-cycle-06.ome.tiff /data/
-# RUN /opt/main.py --cpu /data/exemplar-001-cycle-06.ome.tiff /data/
-# RUN rm -r /data
-ENTRYPOINT ["/opt/main.py"]
