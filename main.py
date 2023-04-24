@@ -38,6 +38,18 @@ def get_args():
         help="Path to input file",
     )
 
+    output = parser.add_argument_group(
+        title="Output", description="Paths to output file"
+    )
+    output.add_argument(
+        "-o",
+        "--output_folder",
+        dest="output_folder",
+        action="store",
+        required=True,
+        help="Path to output folder",
+    )
+
     optional = parser.add_argument_group(
         title="Optional Input for the tool",
         description="Optional arguments for the tool",
@@ -120,19 +132,6 @@ def get_args():
         default="cpu",
         help="Device to use, cpu or gpu [default = 'cpu'].",
     )
-
-    output = parser.add_argument_group(
-        title="Output", description="Paths to output file"
-    )
-    output.add_argument(
-        "-o",
-        "--output_folder",
-        dest="output_folder",
-        action="store",
-        required=True,
-        help="Path to output folder",
-    )
-    output.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
 
     arg = parser.parse_args()
 

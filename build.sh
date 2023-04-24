@@ -1,6 +1,7 @@
-VERSION=0.2.0
+VERSION=0.2.1
 docker buildx build \
     --push \
+    --build-arg BASE_IMAGE="yfukai/conda-jax:latest" \
     --platform linux/amd64,linux/arm64/v8 \
     -t yfukai/basicpy-docker-mcmicro:$VERSION \
     -t yfukai/basicpy-docker-mcmicro:latest \
@@ -9,10 +10,7 @@ docker buildx build \
 docker buildx build \
     --push \
     --platform linux/amd64 \
-    --build-arg BASE_IMAGE="nvidia/cuda:11.5.2-cudnn8-devel-ubuntu20.04" \
-    --build-arg JAX_VERSION_EXTRA="cuda11_cudnn82" \
+    --build-arg BASE_IMAGE="yfukai/conda-jax:latest-cuda" \
     -t yfukai/basicpy-docker-mcmicro:$VERSION-cuda \
     -t yfukai/basicpy-docker-mcmicro:latest-cuda \
     "."
-
-docker push yfukai/basicpy-docker-mcmicro --all-tags
