@@ -104,6 +104,15 @@ def get_args():
         help="Flag to calculate the darkfield [default=False].",
     )
     optional.add_argument(
+        "-a",
+        "--autotune",
+        dest="autotune",
+        action="store_true",
+        required=False,
+        default=True,
+        help="Flag to autotune the parameters [default=True].",
+    )
+    optional.add_argument(
         "-ie",
         "--ignore_single_image_error",
         dest="ignore_single_image_error",
@@ -177,6 +186,8 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
+            if args.autotune:
+                basic.autotune(images_data)
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
@@ -207,6 +218,8 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
+            if args.autotune:
+                basic.autotune(images_data)
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
