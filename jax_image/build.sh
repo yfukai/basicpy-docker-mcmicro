@@ -1,4 +1,4 @@
-JAX_VERSION=0.3.22
+JAX_VERSION=0.4.23
 
 docker buildx build \
     --push \

@@ -1,4 +1,4 @@
-VERSION=0.2.1
+VERSION=0.3.0
 docker buildx build \
     --push \
     --build-arg BASE_IMAGE="yfukai/conda-jax:latest" \
