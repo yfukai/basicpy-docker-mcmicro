@@ -2,7 +2,7 @@ ARG MINIFORGE_NAME="Miniforge3"
 ARG MINIFORGE_VERSION="22.9.0-3"
 ARG BASE_IMAGE="ubuntu:20.04"
 ARG JAX_VERSION_EXTRA="cpu"
-ARG JAX_VERSION="0.3.22"
+ARG JAX_VERSION="0.4.23"
 
 FROM ${BASE_IMAGE}
 #https://stackoverflow.com/questions/44438637/arg-substitution-in-run-command-not-working-for-dockerfile
