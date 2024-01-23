@@ -7,7 +7,7 @@ name: Docker
 
 on:
   release:
-    types: [ "published" ]
+    types: [ "push" ]
   pull_request:
     branches: [ "main" ]
 
