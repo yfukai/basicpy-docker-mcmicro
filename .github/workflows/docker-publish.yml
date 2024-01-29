@@ -99,8 +99,8 @@ jobs:
           labels: ${{ steps.meta_jax_conda.outputs.labels }}
           build-args: |
             JAX_VERSION=${{ env.JAX_VERSION }}
-            JAX_VERSION_EXTRA="cuda11_local"
-            BASE_IMAGE="nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04"
+            JAX_VERSION_EXTRA=cuda11_local
+            BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
       - name: Build and push Docker image (CPU)
         id: build-and-push-cpu
@@ -112,7 +112,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE="${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest"
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest
 
       - name: Build and push Docker image (GPU)
         id: build-and-push-gpu
@@ -124,4 +124,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}-cuda
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE="${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest-cuda"
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest-cuda
