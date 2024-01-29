@@ -88,20 +88,20 @@ jobs:
 #          build-args: |
 #            JAX_VERSION=${{ env.JAX_VERSION }}
 
-      - name: Build and push Docker image (JAX conda GPU)
-        id: build-and-push-jax-conda-gpu
-        uses: docker/build-push-action@v5
-        with:
-          context: jax_image/
-          platforms: linux/amd64
-          push: true #${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_jax_conda.outputs.tags }}-cuda
-          labels: ${{ steps.meta_jax_conda.outputs.labels }}
-          build-args: |
-            JAX_VERSION=${{ env.JAX_VERSION }}
-            JAX_VERSION_EXTRA=cuda11_local
-            BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
-
+#      - name: Build and push Docker image (JAX conda GPU)
+#        id: build-and-push-jax-conda-gpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: jax_image/
+#          platforms: linux/amd64
+#          push: true #${{ github.event_name != 'pull_request' }}
+#          tags: ${{ steps.meta_jax_conda.outputs.tags }}-cuda
+#          labels: ${{ steps.meta_jax_conda.outputs.labels }}
+#          build-args: |
+#            JAX_VERSION=${{ env.JAX_VERSION }}
+#            JAX_VERSION_EXTRA=cuda11_local
+#            BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+#
       - name: Build and push Docker image (CPU)
         id: build-and-push-cpu
         uses: docker/build-push-action@v5
@@ -112,7 +112,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:pr-8
 
       - name: Build and push Docker image (GPU)
         id: build-and-push-gpu
@@ -124,4 +124,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}-cuda
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest-cuda
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:pr-8-cuda
