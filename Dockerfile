@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="yfukai/conda-jax:latest"
+ARG BASE_IMAGE="ghcr.io/yfukai/conda-jax:latest"
 
 FROM ${BASE_IMAGE}
 #https://stackoverflow.com/questions/44438637/arg-substitution-in-run-command-not-working-for-dockerfile

@@ -31,6 +31,10 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
+    strategy:
+      matrix:
+        target: ["cpu", "gpu"]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -38,7 +42,7 @@ jobs:
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install Cosign
-#        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3.1.1
         with:
           cosign-release: 'v2.2.1'
@@ -50,7 +54,7 @@ jobs:
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
-#        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
         with:
           registry: ${{ env.REGISTRY }}
@@ -59,18 +63,11 @@ jobs:
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata (JAX conda)
-        id: meta_jax_conda
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
 
       - name: Get the tag name
         run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
@@ -86,9 +83,9 @@ jobs:
         with:
           context: jax_image/
           platforms: linux/amd64,linux/arm64/v8
-          push: true #${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_jax_conda.outputs.tags }}
-          labels: ${{ steps.meta_jax_conda.outputs.labels }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             JAX_VERSION=${{ env.JAX_version }}
 
@@ -98,9 +95,9 @@ jobs:
         with:
           context: jax_image/
           platforms: linux/amd64
-          push: true #${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_jax_conda.outputs.tags }}-cuda
-          labels: ${{ steps.meta_jax_conda.outputs.labels }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             JAX_VERSION=${{ env.JAX_version }}
             JAX_VERSION_EXTRA="cuda11_local"
@@ -112,11 +109,11 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64/v8
-          push: true # ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE="${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest"
+            BASE_IMAGE="${{ env.REGISTRY }}/yfukai/conda-jax:latest"
 
       - name: Build and push Docker image (GPU)
         id: build-and-push-gpu
@@ -124,8 +121,8 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: true #${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}-cuda
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE="${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:latest-cuda"
+            BASE_IMAGE="${{ env.REGISTRY }}/yfukai/conda-jax:latest-cuda"
