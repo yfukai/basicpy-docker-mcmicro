@@ -76,17 +76,17 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image (JAX conda CPU)
-        id: build-and-push-jax-conda-cpu
-        uses: docker/build-push-action@v5
-        with:
-          context: jax_image/
-          platforms: linux/amd64,linux/arm64/v8
-          push: true #${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_jax_conda.outputs.tags }}
-          labels: ${{ steps.meta_jax_conda.outputs.labels }}
-          build-args: |
-            JAX_VERSION=${{ env.JAX_VERSION }}
+#      - name: Build and push Docker image (JAX conda CPU)
+#        id: build-and-push-jax-conda-cpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: jax_image/
+#          platforms: linux/amd64,linux/arm64/v8
+#          push: true #${{ github.event_name != 'pull_request' }}
+#          tags: ${{ steps.meta_jax_conda.outputs.tags }}
+#          labels: ${{ steps.meta_jax_conda.outputs.labels }}
+#          build-args: |
+#            JAX_VERSION=${{ env.JAX_VERSION }}
 
       - name: Build and push Docker image (JAX conda GPU)
         id: build-and-push-jax-conda-gpu
