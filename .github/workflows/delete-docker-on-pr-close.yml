@@ -1,4 +1,4 @@
-name: Docker
+name: Docker delete tags
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -53,59 +53,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata (JAX conda CPU)
-        id: meta_jax_conda
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-
-      - name: Extract Docker metadata (JAX conda GPU)
-        id: meta_jax_conda_cuda
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}
-          tags: |
-            type=schedule,suffix=-cuda
-            type=ref,event=branch,suffix=-cuda
-            type=ref,event=tag,suffix=-cuda
-            type=ref,event=pr,suffix=-cuda
-
-      - name: Extract Docker metadata (CPU)
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-
-      - name: Extract Docker metadata (GPU)
-        id: meta_cuda
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=schedule,suffix=-cuda
-            type=ref,event=branch,suffix=-cuda
-            type=ref,event=tag,suffix=-cuda
-            type=ref,event=pr,suffix=-cuda
-
       - name: Delete image (JAX conda CPU)
         uses: bots-house/ghcr-delete-image-action@v1.1.0
         with:
           owner: yfukai
           name: ${{ env.JAX_CONDA_IMAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.meta_jax_conda.outputs.tags }}
+          tag: pr-${{github.event.pull_request.number }}
 
       - name: Delete image (JAX conda GPU)
         uses: bots-house/ghcr-delete-image-action@v1.1.0
@@ -113,7 +67,7 @@ jobs:
           owner: yfukai
           name: ${{ env.JAX_CONDA_IMAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.meta_jax_conda_cuda.outputs.tags }}
+          tag: pr-${{github.event.pull_request.number }}-cuda
 
       - name: Delete image (JAX conda CPU)
         uses: bots-house/ghcr-delete-image-action@v1.1.0
@@ -121,7 +75,7 @@ jobs:
           owner: yfukai
           name: ${{ env.IMAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.meta.outputs.tags }}
+          tag: pr-${{github.event.pull_request.number }}
 
       - name: Delete image (JAX conda GPU)
         uses: bots-house/ghcr-delete-image-action@v1.1.0
@@ -129,4 +83,4 @@ jobs:
           owner: yfukai
           name: ${{ env.IMAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.meta_cuda.outputs.tags }}
+          tag: pr-${{github.event.pull_request.number }}-cuda
