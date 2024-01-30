@@ -6,10 +6,9 @@ name: Docker
 # documentation.
 
 on:
-  release:
-    types: [ "published" ]
   pull_request:
     branches: [ "main" ]
+    types: [ closed ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -69,14 +68,6 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
 
-      - name: Extract first tag (JAX conda CPU)
-        id: extract_first_tag_cpu
-        run: |
-          # Extracting the first component
-          first_component=$(echo "${{ steps.meta_jax_conda.outputs.tags }}" | cut -d ',' -f 1)
-          # Setting the output
-          echo "meta_jax_conda_first_tag=$first_component" >> $GITHUB_OUTPUT
-
       - name: Extract Docker metadata (JAX conda GPU)
         id: meta_jax_conda_cuda
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
@@ -87,14 +78,6 @@ jobs:
             type=ref,event=branch,suffix=-cuda
             type=ref,event=tag,suffix=-cuda
             type=ref,event=pr,suffix=-cuda
-
-      - name: Extract first tag (JAX conda GPU)
-        id: extract_first_tag_gpu
-        run: |
-          # Extracting the first component
-          first_component=$(echo "${{ steps.meta_jax_conda_cuda.outputs.tags }}" | cut -d ',' -f 1)
-          # Setting the output
-          echo "meta_jax_conda_cuda_first_tag=$first_component" >> $GITHUB_OUTPUT
 
       - name: Extract Docker metadata (CPU)
         id: meta
@@ -118,57 +101,55 @@ jobs:
             type=ref,event=tag,suffix=-cuda
             type=ref,event=pr,suffix=-cuda
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      # Build and push Docker image with Buildx
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image (JAX conda CPU)
-        id: build-and-push-jax-conda-cpu
-        uses: docker/build-push-action@v5
-        with:
-          context: jax_image/
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.meta_jax_conda.outputs.tags }}
-          labels: ${{ steps.meta_jax_conda.outputs.labels }}
-          build-args: |
-            JAX_VERSION=${{ env.JAX_VERSION }}
-
-      - name: Build and push Docker image (JAX conda GPU)
-        id: build-and-push-jax-conda-gpu
-        uses: docker/build-push-action@v5
-        with:
-          context: jax_image/
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta_jax_conda_cuda.outputs.tags }}
-          labels: ${{ steps.meta_jax_conda_cuda.outputs.labels }}
-          build-args: |
-            JAX_VERSION=${{ env.JAX_VERSION }}
-            JAX_VERSION_EXTRA=cuda11_local
-            BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
-
-      - name: Build and push Docker image (CPU)
-        id: build-and-push-cpu
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:${{ env.meta_jax_conda_first_tag }}
-
-      - name: Build and push Docker image (GPU)
-        id: build-and-push-gpu
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta_cuda.outputs.tags }}
-          labels: ${{ steps.meta_cuda.outputs.labels }}
-          build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:${{ env.meta_jax_conda_cuda_first_tag }}
+#      # Build and push Docker image with Buildx
+#      # https://github.com/docker/build-push-action
+#      - name: Build and push Docker image (JAX conda CPU)
+#        id: build-and-push-jax-conda-cpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: jax_image/
+#          platforms: linux/amd64,linux/arm64/v8
+#          push: true #${{ github.event_name != 'pull_request' }}
+#          tags: ${{ steps.meta_jax_conda.outputs.tags }}
+#          labels: ${{ steps.meta_jax_conda.outputs.labels }}
+#          build-args: |
+#            JAX_VERSION=${{ env.JAX_VERSION }}
+#
+#      - name: Build and push Docker image (JAX conda GPU)
+#        id: build-and-push-jax-conda-gpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: jax_image/
+#          platforms: linux/amd64
+#          push: true #${{ github.event_name != 'pull_request' }}
+#          tags: ${{ steps.meta_jax_conda_cuda.outputs.tags }}
+#          labels: ${{ steps.meta_jax_conda_cuda.outputs.labels }}
+#          build-args: |
+#            JAX_VERSION=${{ env.JAX_VERSION }}
+#            JAX_VERSION_EXTRA=cuda11_local
+#            BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+#
+#      - name: Build and push Docker image (CPU)
+#        id: build-and-push-cpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          platforms: linux/amd64,linux/arm64/v8
+#          push: true
+#          tags: ${{ steps.meta.outputs.tags }}
+#          labels: ${{ steps.meta.outputs.labels }}
+#          build-args: |
+#            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:${{ env.meta_jax_conda_first_tag }}
+#
+#      - name: Build and push Docker image (GPU)
+#        id: build-and-push-gpu
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          platforms: linux/amd64
+#          push: true
+#          tags: ${{ steps.meta_cuda.outputs.tags }}
+#          labels: ${{ steps.meta_cuda.outputs.labels }}
+#          build-args: |
+#            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}:${{ env.meta_jax_conda_cuda_first_tag }}
+#
