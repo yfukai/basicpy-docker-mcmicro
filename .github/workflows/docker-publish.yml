@@ -159,7 +159,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.meta_jax_conda_first_tag }}
+            BASE_IMAGE=${{ steps.extract_first_tag_cpu.outputs.meta_jax_conda_first_tag }}
 
       - name: Build and push Docker image (GPU)
         id: build-and-push-gpu
@@ -171,4 +171,4 @@ jobs:
           tags: ${{ steps.meta_cuda.outputs.tags }}
           labels: ${{ steps.meta_cuda.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.meta_jax_conda_cuda_first_tag }}
+            BASE_IMAGE=${{ steps.extract_first_tag_gpu.outputs.meta_jax_conda_cuda_first_tag }}
