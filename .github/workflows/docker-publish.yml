@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Publish
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -70,10 +70,11 @@ jobs:
       - name: Extract first tag (JAX conda CPU)
         id: extract_first_tag_cpu
         run: |
-          # Extracting the first component
-          first_component=$(echo "${{ steps.meta_jax_conda.outputs.tags }}" | cut -d ',' -f 1)
+          # Extracting the first tag
+          tags="${{ steps.meta_jax_conda.outputs.tags }}"
+          first_line=$(echo "$tags" | head -n 1)
           # Setting the output
-          echo "meta_jax_conda_first_tag=$first_component" >> $GITHUB_OUTPUT
+          echo "meta_jax_conda_first_tag=$first_line" >> $GITHUB_OUTPUT
 
       - name: Extract Docker metadata (JAX conda GPU)
         id: meta_jax_conda_cuda
@@ -89,10 +90,11 @@ jobs:
       - name: Extract first tag (JAX conda GPU)
         id: extract_first_tag_gpu
         run: |
-          # Extracting the first component
-          first_component=$(echo "${{ steps.meta_jax_conda_cuda.outputs.tags }}" | cut -d ',' -f 1)
+          # Extracting the first tag
+          tags="${{ steps.meta_jax_conda_cuda.outputs.tags }}"
+          first_line=$(echo "$tags" | head -n 1)
           # Setting the output
-          echo "meta_jax_conda_cuda_first_tag=$first_component" >> $GITHUB_OUTPUT
+          echo "meta_jax_conda_cuda_first_tag=$first_line" >> $GITHUB_OUTPUT
 
       - name: Extract Docker metadata (CPU)
         id: meta
