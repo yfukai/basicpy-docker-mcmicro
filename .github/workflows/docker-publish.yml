@@ -61,11 +61,6 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
 
       - name: Extract first tag (JAX conda CPU)
         id: extract_first_tag_cpu
@@ -81,11 +76,9 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}
-          tags: |
-            type=schedule,suffix=-cuda
-            type=ref,event=branch,suffix=-cuda
-            type=ref,event=tag,suffix=-cuda
-            type=ref,event=pr,suffix=-cuda
+          flavor: |
+            latest=auto
+            suffix=-cuda,onlatest=true
 
       - name: Extract first tag (JAX conda GPU)
         id: extract_first_tag_gpu
@@ -101,22 +94,15 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
 
       - name: Extract Docker metadata (GPU)
         id: meta_cuda
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=schedule,suffix=-cuda
-            type=ref,event=branch,suffix=-cuda
-            type=ref,event=tag,suffix=-cuda
-            type=ref,event=pr,suffix=-cuda
+          flavor: |
+            latest=auto
+            suffix=-cuda,onlatest=true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
