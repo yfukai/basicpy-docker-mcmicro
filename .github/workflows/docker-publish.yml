@@ -78,7 +78,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.JAX_CONDA_IMAGE_NAME }}
           flavor: |
             latest=auto
-            suffix=-cuda,onlatest=true
+            suffix=-cuda
+            onlatest=true
 
       - name: Extract first tag (JAX conda GPU)
         id: extract_first_tag_gpu
@@ -102,7 +103,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             latest=auto
-            suffix=-cuda,onlatest=true
+            suffix=-cuda
+            onlatest=true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
