@@ -11,13 +11,16 @@ jobs:
   delete-untagged-images:
     name: Delete Untagged Images
     runs-on: ubuntu-latest
+    strategy:
+        matrix:
+          image_name: [conda-jax, basicpy-docker-mcmicro]
     steps:
       - uses: bots-house/ghcr-delete-image-action@v1.1.0
         with:
           # NOTE: at now only orgs is supported
-          owner: bots-house
-          name: some-web-service
+          owner: yfukai
+          name: ${{ matrix.image_name }}
           # NOTE: using Personal Access Token
           token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images
-          untagged-keep-latest: 3
+          untagged-keep-latest: 2
