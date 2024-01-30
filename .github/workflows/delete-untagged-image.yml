@@ -18,6 +18,6 @@ jobs:
           owner: bots-house
           name: some-web-service
           # NOTE: using Personal Access Token
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images
           untagged-keep-latest: 3
