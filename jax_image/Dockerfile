@@ -40,7 +40,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
 
 # Installing or building Jax
 RUN conda install -c conda-forge mamba \
-    && mamba install -c conda-forge aicsimageio pip numpy wheel scikit-image maven openjdk\
+    && mamba install -c conda-forge aicsimageio pip numpy wheel scikit-image maven openjdk=11.0.1\
     && pip --no-cache-dir install bfio[bioformats]
 
 RUN pip --no-cache-dir install "jax[${JAX_VERSION_EXTRA}]==${JAX_VERSION}" jaxlib || \
