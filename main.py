@@ -150,6 +150,15 @@ def get_args():
         default=False,
         help="If True, sort the intensity pixelwise (suitable for non-timelapse images).",
     )
+    optional.add_argument(
+        "--fourier_l0_norm_cost_coef",
+        dest="autotune_fourier_l0_norm_cost_coef",
+        action="store",
+        required=False,
+        type=float,
+        default=1e4,
+        help="Relative weight of the l0 norm cost in the Fourier domain for autotuning.",
+    )
 
     arg = parser.parse_args()
 
@@ -197,7 +206,10 @@ def main(args):
                     "The image is single sited. Was it saved in the correct way?"
                 )
             if args.autotune:
-                basic.autotune(images_data)
+                basic.autotune(
+                    images_data,
+                    fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
@@ -229,7 +241,10 @@ def main(args):
                     "The image is single sited. Was it saved in the correct way?"
                 )
             if args.autotune:
-                basic.autotune(images_data)
+                basic.autotune(
+                    images_data,
+                    fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
