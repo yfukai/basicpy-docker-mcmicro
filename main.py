@@ -104,10 +104,10 @@ def get_args():
         help="Flag to calculate the darkfield [default=False].",
     )
     optional.add_argument(
-        "-a",
-        "--autotune",
-        dest="autotune",
-        action="store_true",
+        "-na",
+        "--no_autotune",
+        dest="no_autotune",
+        action="store_false",
         required=False,
         default=True,
         help="Flag to autotune the parameters [default=True].",
@@ -141,6 +141,24 @@ def get_args():
         default="cpu",
         help="Device to use, cpu or gpu [default = 'cpu'].",
     )
+    optional.add_argument(
+        "-s",
+        "--sort_intensity",
+        action="store_true",
+        dest="sort_intensity",
+        required=False,
+        default=False,
+        help="If True, sort the intensity pixelwise (suitable for non-timelapse images).",
+    )
+    optional.add_argument(
+        "--fourier_l0_norm_cost_coef",
+        dest="autotune_fourier_l0_norm_cost_coef",
+        action="store",
+        required=False,
+        type=float,
+        default=1e4,
+        help="Relative weight of the l0 norm cost in the Fourier domain for autotuning.",
+    )
 
     arg = parser.parse_args()
 
@@ -164,6 +182,7 @@ def main(args):
         max_reweight_iterations=args.max_reweight_iterations,
         fitting_mode=args.fitting_mode,
         get_darkfield=args.darkfield,
+        sort_intensity=args.sort_intensity,
     )
 
     # Initialize flatfields and darkfields
@@ -186,8 +205,11 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
-            if args.autotune:
-                basic.autotune(images_data)
+            if not args.no_autotune:
+                basic.autotune(
+                    images_data,
+                    fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
@@ -218,8 +240,11 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
-            if args.autotune:
-                basic.autotune(images_data)
+            if not args.no_autotune:
+                basic.autotune(
+                    images_data,
+                    fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
+                )
             basic.fit(images_data)
             flatfields.append(basic.flatfield)
             darkfields.append(basic.darkfield)
