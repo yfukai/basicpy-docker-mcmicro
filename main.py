@@ -104,10 +104,10 @@ def get_args():
         help="Flag to calculate the darkfield [default=False].",
     )
     optional.add_argument(
-        "-a",
-        "--autotune",
-        dest="autotune",
-        action="store_true",
+        "-na",
+        "--no_autotune",
+        dest="no_autotune",
+        action="store_false",
         required=False,
         default=True,
         help="Flag to autotune the parameters [default=True].",
@@ -205,7 +205,7 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
-            if args.autotune:
+            if not args.no_autotune:
                 basic.autotune(
                     images_data,
                     fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
@@ -240,7 +240,7 @@ def main(args):
                 raise RuntimeError(
                     "The image is single sited. Was it saved in the correct way?"
                 )
-            if args.autotune:
+            if not args.no_autotune:
                 basic.autotune(
                     images_data,
                     fourier_l0_norm_cost_coef=args.autotune_fourier_l0_norm_cost_coef,
