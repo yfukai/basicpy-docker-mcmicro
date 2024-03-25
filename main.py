@@ -109,8 +109,7 @@ def get_args():
         dest="autotune",
         action="store_true",
         required=False,
-        default=True,
-        help="Flag to autotune the parameters [default=True].",
+        help="Flag to autotune the parameters [default=False].",
     )
     optional.add_argument(
         "-ie",
