@@ -141,6 +141,15 @@ def get_args():
         default="cpu",
         help="Device to use, cpu or gpu [default = 'cpu'].",
     )
+    optional.add_argument(
+        "-s",
+        "--sort_intensity",
+        action="store_true",
+        dest="sort_intensity",
+        required=False,
+        default=False,
+        help="If True, sort the intensity pixelwise (suitable for non-timelapse images).",
+    )
 
     arg = parser.parse_args()
 
@@ -164,6 +173,7 @@ def main(args):
         max_reweight_iterations=args.max_reweight_iterations,
         fitting_mode=args.fitting_mode,
         get_darkfield=args.darkfield,
+        sort_intensity=args.sort_intensity,
     )
 
     # Initialize flatfields and darkfields
