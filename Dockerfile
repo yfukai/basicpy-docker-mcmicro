@@ -20,4 +20,3 @@ COPY ./main.py /opt/
 # COPY ./testdata/exemplar-001-cycle-06.ome.tiff /data/
 # RUN /opt/main.py --cpu /data/exemplar-001-cycle-06.ome.tiff /data/
 # RUN rm -r /data
-ENTRYPOINT ["/opt/main.py"]
