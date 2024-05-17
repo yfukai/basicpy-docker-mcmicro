@@ -135,6 +135,22 @@ jobs:
             JAX_VERSION_EXTRA=cuda11_local
             BASE_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Build and push Docker image (CPU)
         id: build-and-push-cpu
         uses: docker/build-push-action@v5
@@ -146,6 +162,22 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BASE_IMAGE=${{ steps.extract_first_tag_cpu.outputs.meta_jax_conda_first_tag }}
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
       - name: Build and push Docker image (GPU)
         id: build-and-push-gpu
