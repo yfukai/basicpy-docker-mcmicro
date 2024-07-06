@@ -14,6 +14,14 @@ ENV PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:
 # Installing basicpy and other pip packages
 RUN pip --no-cache-dir install basicpy==1.2.0 bioformats_jar
 
+# Pre-fetch bioformats jars to a world-readable location.
+# Force TLS 1.2 to work around a Java bug in the JDK version in this container.
+RUN env JAVA_TOOL_OPTIONS='-Dhttps.protocols=TLSv1.2' \
+    python -c 'import bfio; bfio.start()' \
+    && mv /root/.jgo /root/.m2 /tmp \
+    && chmod -R a+rwX /tmp/.jgo /tmp/.m2
+ENV HOME=/tmp
+
 # Copy script and test run
 COPY ./main.py /opt/
 # RUN mkdir /data
