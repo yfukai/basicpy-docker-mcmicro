@@ -1,4 +1,4 @@
-version="0.3.1"
+version="0.3.5"
 
 docker pull ghcr.io/yfukai/basicpy-docker-mcmicro:${version}-cuda
 docker run --rm -v $(pwd)/testdata:/data ghcr.io/yfukai/basicpy-docker-mcmicro:${version}-cuda -d=gpu -i /data/exemplar-001-cycle-06.ome.tiff -o /data/
