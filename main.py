@@ -159,12 +159,32 @@ def get_args():
         default=1e4,
         help="Relative weight of the l0 norm cost in the Fourier domain for autotuning.",
     )
+    optional.add_argument(
+        "--output-flatfield",
+        dest="output_flatfield",
+        required=False,
+        default=None,
+        help="Filename for flatfield output. If empty will default to {input filename}. A sufix will be added to differenciate between flatfield and darkfield.",
+    )
+    optional.add_argument(
+        "--output-darkfield",
+        dest="output_darkfield",
+        required=False,
+        default=None,
+        help="Filename for darkfield output. If empty will default to {input filename}. A sufix will be added to differenciate between flatfield and darkfield.",
+    )
 
     arg = parser.parse_args()
 
     # Convert input and output to Pathlib
     arg.input = Path(arg.input)
     arg.output_folder = Path(arg.output_folder)
+
+    if arg.output_flatfield is None:
+        arg.output_flatfield = splitext(arg.input.name)[0]
+
+    if arg.output_darkfield is None:
+        arg.output_darkfield = splitext(arg.input.name)[0]
 
     return arg
 
@@ -254,8 +274,8 @@ def main(args):
     darkfields = np.moveaxis(np.array(darkfields), 0, -1)
 
     # Get output file names, splitext gets the file name without the extension
-    flatfield_path = args.output_folder / f"{splitext(args.input.name)[0]}-ffp.tiff"
-    darkfield_path = args.output_folder / f"{splitext(args.input.name)[0]}-dfp.tiff"
+    flatfield_path = args.output_folder / f"{args.output_flatfield}-ffp.tiff"
+    darkfield_path = args.output_folder / f"{args.output_darkfield}-dfp.tiff"
 
     # Save flatfields and darkfields
     imsave(flatfield_path, flatfields, check_contrast=False)
